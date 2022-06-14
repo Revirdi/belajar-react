@@ -4,6 +4,11 @@ import axiosInstance from "../../services/axios";
 
 function Home() {
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [formState, setFormstate] = useState({
+    keyword: "",
+    category: "",
+  });
 
   useEffect(() => {
     fetchProducts();
@@ -13,26 +18,84 @@ function Home() {
     try {
       const resGetProducts = await axiosInstance.get("/products");
       setProducts(resGetProducts.data);
+      setFilteredProducts(resGetProducts.data);
     } catch (error) {
-      alert("Terjadi kesalahan");
+      alert("Terjadi kesalahan. Api udah dinyalain ?");
       console.log({ error });
     }
   };
 
   const renderProducts = () => {
-    return products.map((product) => (
+    return filteredProducts.map((product) => (
       <ProductCard key={product.id} product={product} />
     ));
   };
 
-  const handleChange = () => {
-    // copy paste dari komponen lain
+  const handleChange = (event) => {
+    setFormstate({ ...formState, [event.target.name]: event.target.value });
   };
-  const btnSearchHandler = () => {
+
+  const onFilterHandler = () => {
     // untuk search products berdasarkan nama dan category
+    const filteredProducts = products.filter((product) => {
+      const productName = product.productName.toLowerCase();
+      const keywordName = formState.keyword.toLowerCase();
+      return (
+        productName.includes(keywordName) &&
+        product.category.includes(formState.category)
+      );
+    });
+
+    setFilteredProducts(filteredProducts);
   };
-  const selectSortHandler = () => {
+
+  const btnSearchHandler = () => {
+    onFilterHandler();
+  };
+
+  const selectSortHandler = (event) => {
     // sorting products
+
+    const sortBy = event.target.value;
+    const tmpProducts = [...filteredProducts];
+
+    // filteredProducts : A C B F E
+    switch (sortBy) {
+      case "az":
+        tmpProducts.sort((a, b) => {
+          if (a.productName < b.productName) {
+            return -1;
+          } else if (a.productName > b.productName) {
+            return 1;
+          } else {
+            return 0;
+          }
+        });
+        setFilteredProducts(tmpProducts);
+        break;
+      case "za":
+        tmpProducts.sort((a, b) => {
+          if (a.productName < b.productName) {
+            return 1;
+          } else if (a.productName > b.productName) {
+            return -1;
+          } else {
+            return 0;
+          }
+        });
+        setFilteredProducts(tmpProducts);
+        break;
+      case "lowPrice":
+        tmpProducts.sort((a, b) => a.price - b.price);
+        setFilteredProducts(tmpProducts);
+        break;
+      case "highPrice":
+        tmpProducts.sort((a, b) => b.price - a.price);
+        setFilteredProducts(tmpProducts);
+        break;
+      default:
+        onFilterHandler();
+    }
   };
 
   return (
