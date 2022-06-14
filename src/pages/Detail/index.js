@@ -41,7 +41,7 @@ function DetailProduct() {
         </div>
         <div className="col-6 d-flex flex-column justify-content-center">
           <h4>{productName}</h4>
-          <h5>{price}</h5>
+          <h5>Rp.{price?.toLocaleString("id")}</h5>
           <p>{description}</p>
           <div className="d-flex flex-row align-items-center">
             <button className="btn btn-primary " onClick={decrement}>
